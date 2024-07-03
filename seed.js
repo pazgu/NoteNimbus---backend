@@ -1,6 +1,6 @@
 // seed.js
 // This script seeds the database with sample data.
-// This is for development purposes only and should not be used in production.
+// This is for development purposes only and won't not be used in production.
 
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
@@ -222,7 +222,6 @@ async function seedDB() {
     await Note.deleteMany({});
     await User.deleteMany({});
 
-    // const createdUsers = await User.insertMany(users);
     const createdUsers = await Promise.all(
       users.map(async (u) => {
         const hashedPassword = await bcrypt.hash(u.password, SALT_ROUNDS); // Hash password
@@ -232,17 +231,18 @@ async function seedDB() {
       })
     );
 
-    // Assign each note a user
+    // Assign to each note a user id
     const notesWithUsers = notes.map((note, index) => {
       return {
         ...note,
         user: createdUsers[index % createdUsers.length]._id,
+        //f.e Note 0 -> User 0 (0 % 3 = 0), Note 1 -> User 1 (1 % 3 = 1)
       };
     });
 
     const createdNotes = await Note.insertMany(notesWithUsers);
 
-    // Update users with the products they are selling
+    // Update users collection with their notes array
     for (let note of createdNotes) {
       await User.findByIdAndUpdate(
         note.user,
