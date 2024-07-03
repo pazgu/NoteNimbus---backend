@@ -9,7 +9,10 @@ const SALT_ROUNDS = 10;
 async function register(req, res) {
   console.log("register");
   try {
-    const { password, ...userData } = req.body;
+    const { password, confirmPassword, ...userData } = req.body;
+    if (password !== confirmPassword) {
+      return res.status(400).json({ error: "Passwords do not match" });
+    }
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
     const user = new User({
       userData,
@@ -31,22 +34,18 @@ async function register(req, res) {
 async function login(req, res) {
   try {
     const { username, password } = req.body;
-
     const user = await User.findOne({ username });
     if (!user) {
       return res.status(401).json({ error: "Authentication failed" });
     }
-
     const isPasswordMatch = await bcrypt.compare(password, user.password);
     if (!isPasswordMatch) {
       return res.status(401).json({ error: "Authentication failed" });
     }
-
     // Generate JWT token containing user id
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
       expiresIn: "1h",
     });
-
     res.status(200).json({ token });
   } catch (error) {
     res.status(500).json({ error: "Login failed" });
