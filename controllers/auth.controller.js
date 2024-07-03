@@ -9,21 +9,19 @@ const SALT_ROUNDS = 10;
 async function register(req, res) {
   console.log("register");
   try {
-    const { username, password, firstName, lastName } = req.body;
+    const { password, ...userData } = req.body;
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
     const user = new User({
-      username,
+      userData,
       password: hashedPassword,
-      firstName,
-      lastName,
     });
     await user.save();
 
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
-    console.log("register", error.name);
+    console.error("register", error.name);
     if (error.code === 11000) {
-      console.log("username already exists");
+      console.error("username already exists");
       return res.status(400).json({ error: "User already exists" });
     }
     res.status(500).json({ error: "Registration failed" });
