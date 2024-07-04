@@ -4,7 +4,10 @@ const PORT = process.env.PORT || 3000;
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
-const { verifyToken } = require("./middleware/auth.middleware");
+const {
+  verifyToken,
+  authorizeNoteOwner,
+} = require("./middleware/auth.middleware");
 
 dotenv.config(); // Load config
 
@@ -22,13 +25,24 @@ async function main() {
   const usersRoutes = require("./routers/user.route");
   // auth routes
   const authRoutes = require("./routers/auth.route");
-  const protectedRoutes = require("./routers/protected.route");
+  // const protectedRoutes = require("./routers/protected.route");
 
   app.use("/api/auth", authRoutes);
-  app.use("/api/protected", verifyToken, protectedRoutes);
+  // app.use("/api/protected", verifyToken, protectedRoutes);
 
-  app.use("/api/notes", notesRoutes);
-  app.use("/api/users", verifyToken, usersRoutes);
+  app.use("/api/notes", verifyToken, notesRoutes);
+  app.use("/api/users", verifyToken, authorizeNoteOwner, usersRoutes);
+  app.get("/api/home", async (req, res) => {
+    try {
+      const someDummyNotes = await Note.find({}).limit(5); //first 5 are dummies and not belong to any users
+      res.status(200).json(someDummyNotes);
+    } catch (error) {
+      console.error("Error occurred while filtering notes:", error);
+      res
+        .status(500)
+        .json({ message: "An error occurred while filtering notes" });
+    }
+  });
 
   app.listen(PORT, () => console.log(`app runing on port ${PORT}`));
 }

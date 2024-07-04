@@ -1,9 +1,4 @@
 const express = require("express");
-const {
-  verifyToken,
-  authorizeProductOwner,
-  authorizeNoteOwner,
-} = require("../middleware/auth.middleware");
 
 const {
   getUserNotes,
@@ -11,16 +6,15 @@ const {
   createNote,
   deleteNote,
   editNote,
-  getDummyNotes,
 } = require("../controllers/note.controller");
+const { authorizeNoteOwner } = require("../middleware/auth.middleware");
 
 const router = express.Router();
 
-router.get("/", getDummyNotes);
-router.get("/myNotes", verifyToken, getUserNotes);
-router.get("/:id", verifyToken, getNoteById);
-router.post("/create", verifyToken, createNote);
-router.delete("/:id", verifyToken, authorizeNoteOwner, deleteNote);
-router.put("/:id", verifyToken, authorizeNoteOwner, editNote);
+router.get("/myNotes", authorizeNoteOwner, getUserNotes);
+router.post("/create", createNote);
+router.put("/:id", authorizeNoteOwner, editNote);
+router.get("/:id", authorizeNoteOwner, getNoteById);
+router.delete("/:id", authorizeNoteOwner, deleteNote);
 
 module.exports = router;
