@@ -18,17 +18,17 @@ async function main() {
     })
   );
 
-  const notesRoutes = require("./routes/note.route");
-  const usersRoutes = require("./routes/user.route");
+  const notesRoutes = require("./routers/note.route");
+  const usersRoutes = require("./routers/user.route");
   // auth routes
-  const authRoutes = require("./routes/auth.route");
-  const protectedRoutes = require("./routes/protected.route");
+  const authRoutes = require("./routers/auth.route");
+  const protectedRoutes = require("./routers/protected.route");
 
   app.use("/api/auth", authRoutes);
   app.use("/api/protected", verifyToken, protectedRoutes);
 
   app.use("/api/notes", notesRoutes);
-  app.use("/api/users", usersRoutes);
+  app.use("/api/users", verifyToken, usersRoutes);
 
   app.listen(PORT, () => console.log(`app runing on port ${PORT}`));
 }

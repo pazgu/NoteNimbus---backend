@@ -1,7 +1,7 @@
-const Product = require("../models/product.model");
+const Note = require("../models/note.model");
 const User = require("../models/user.model");
 
-async function getProducts(req, res) {
+async function getNotes(req, res) {
   const params = {
     name: req.query.name,
     minPrice: req.query.minPrice,
@@ -98,21 +98,21 @@ async function filterByParams(req, res) {
   }
 }
 
-async function getProductById(req, res) {
-  let product = null;
+async function getNoteById(req, res) {
+  let note = null;
   try {
     const { id } = req.params;
-    product = await Product.findById(id).exec();
-    res.status(200).json(product);
+    note = await Note.findById(id).exec();
+    res.status(200).json(note);
   } catch (error) {
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+    if (!note) {
+      return res.status(404).json({ message: "Note not found" });
     }
     res.status(500).json({ message: error.message });
   }
 }
 
-async function deleteProduct(req, res) {
+async function deleteNote(req, res) {
   let product = null;
   try {
     const { id } = req.params;
@@ -126,7 +126,7 @@ async function deleteProduct(req, res) {
   }
 }
 
-async function createProduct(req, res) {
+async function createNote(req, res) {
   const { name, price, quantity, categories, user } = req.body;
   const newProduct = new Product({
     name,
@@ -162,7 +162,7 @@ async function createProduct(req, res) {
   }
 }
 
-async function editProduct(req, res) {
+async function editNote(req, res) {
   let product = null;
   try {
     const { id } = req.params;
@@ -181,27 +181,37 @@ async function editProduct(req, res) {
   }
 }
 
-async function getUserProducts(req, res) {
+async function getUserNotes(req, res) {
   try {
     const userId = req.userId;
-    const user = await User.findById(userId).populate("products");
+    const user = await User.findById(userId).populate("notes");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.status(200).json({ products: user.products });
+    res.status(200).json({ notes: user.notes });
   } catch (error) {
-    console.error("Error fetching user products:", error);
+    console.error("Error fetching user notes:", error);
+    res.status(500).json({ message: "Server error while fetching user notes" });
+  }
+}
+
+async function getDummyNotes(req, res) {
+  try {
+    const someDummyNotes = await Note.find({}).limit(5); //first 5 are dummies and not belong to any users
+    res.status(200).json({ someDummyNotes });
+  } catch (error) {
+    console.error(error);
     res
       .status(500)
-      .json({ message: "Server error while fetching user products" });
+      .json({ message: "An error occurred while filtering notes" });
   }
 }
 
 module.exports = {
-  getProducts,
-  getProductById,
-  deleteProduct,
-  createProduct,
-  editProduct,
-  getUserProducts,
+  getNoteById,
+  deleteNote,
+  createNote,
+  editNote,
+  getUserNotes,
+  getDummyNotes,
 };

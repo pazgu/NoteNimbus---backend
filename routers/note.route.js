@@ -2,6 +2,7 @@ const express = require("express");
 const {
   verifyToken,
   authorizeProductOwner,
+  authorizeNoteOwner,
 } = require("../middleware/auth.middleware");
 
 const {
@@ -17,9 +18,9 @@ const router = express.Router();
 
 router.get("/", getDummyNotes);
 router.get("/myNotes", verifyToken, getUserNotes);
-router.get("/:id", getNoteById);
+router.get("/:id", verifyToken, getNoteById);
 router.post("/create", verifyToken, createNote);
-router.delete("/:id", verifyToken, authorizeProductOwner, deleteNote);
-router.put("/:id", verifyToken, authorizeProductOwner, editNote);
+router.delete("/:id", verifyToken, authorizeNoteOwner, deleteNote);
+router.put("/:id", verifyToken, authorizeNoteOwner, editNote);
 
 module.exports = router;
