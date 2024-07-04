@@ -218,16 +218,16 @@ const notes = [
 
 async function seedDB() {
   try {
-    await connectDB(); // Connect to the database
+    await connectDB();
     await Note.deleteMany({});
     await User.deleteMany({});
 
     const createdUsers = await Promise.all(
       users.map(async (u) => {
-        const hashedPassword = await bcrypt.hash(u.password, SALT_ROUNDS); // Hash password
-        const user = new User({ ...u, password: hashedPassword }); // Create new user object
-        await user.save(); // Save user to database
-        return user; // Return the saved user object
+        const hashedPassword = await bcrypt.hash(u.password, SALT_ROUNDS);
+        const user = new User({ ...u, password: hashedPassword });
+        await user.save();
+        return user;
       })
     );
 

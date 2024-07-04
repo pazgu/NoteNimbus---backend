@@ -8,6 +8,7 @@ const {
   verifyToken,
   authorizeNoteOwner,
 } = require("./middleware/auth.middleware");
+const Note = require("./models/note.model");
 
 dotenv.config(); // Load config
 
@@ -29,18 +30,17 @@ async function main() {
 
   app.use("/api/auth", authRoutes);
   // app.use("/api/protected", verifyToken, protectedRoutes);
-
   app.use("/api/notes", verifyToken, notesRoutes);
-  app.use("/api/users", verifyToken, authorizeNoteOwner, usersRoutes);
+  app.use("/api/users", verifyToken, usersRoutes);
   app.get("/api/home", async (req, res) => {
     try {
-      const someDummyNotes = await Note.find({}).limit(5); //first 5 are dummies and not belong to any users
+      const someDummyNotes = await Note.find({}).limit(6); //first 6 are dummies and not belong to any users
       res.status(200).json(someDummyNotes);
     } catch (error) {
-      console.error("Error occurred while filtering notes:", error);
+      console.error("Error occurred while generating notes:", error);
       res
         .status(500)
-        .json({ message: "An error occurred while filtering notes" });
+        .json({ message: "An error occurred while generating notes" });
     }
   });
 

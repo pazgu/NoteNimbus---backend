@@ -5,12 +5,11 @@ const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = process.env;
 
 const SALT_ROUNDS = 10;
-//fix the userData body not working in postman
+
 async function register(req, res) {
   console.log("register");
   try {
     const { password, confirmPassword, ...userData } = req.body;
-    console.log(...userData);
     if (password !== confirmPassword) {
       return res.status(400).json({ error: "Passwords do not match" });
     }
@@ -28,6 +27,7 @@ async function register(req, res) {
       console.error("username already exists");
       return res.status(400).json({ error: "User already exists" });
     }
+    console.log(error.message);
     res.status(500).json({ error: "Registration failed" });
   }
 }
