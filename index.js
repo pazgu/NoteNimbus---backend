@@ -24,12 +24,9 @@ async function main() {
 
   const notesRoutes = require("./routers/note.route");
   const usersRoutes = require("./routers/user.route");
-  // auth routes
   const authRoutes = require("./routers/auth.route");
-  // const protectedRoutes = require("./routers/protected.route");
 
   app.use("/api/auth", authRoutes);
-  // app.use("/api/protected", verifyToken, protectedRoutes);
   app.use("/api/notes", verifyToken, notesRoutes);
   app.use("/api/users", verifyToken, usersRoutes);
   app.get("/api/home", async (req, res) => {
