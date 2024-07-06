@@ -86,9 +86,13 @@ async function editNote(req, res) {
 async function getUserNotes(req, res) {
   try {
     const userId = req.userId;
+    console.log("getuser", userId);
     const user = await User.findById(userId).populate("notes");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
+    if (user.notes.length === 0) {
+      return res.status(404).json({ message: "User has no notes" });
     }
     res.status(200).json({ notes: user.notes });
   } catch (error) {

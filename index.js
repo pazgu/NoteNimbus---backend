@@ -29,17 +29,6 @@ async function main() {
   app.use("/api/auth", authRoutes);
   app.use("/api/notes", verifyToken, notesRoutes);
   app.use("/api/users", verifyToken, usersRoutes);
-  app.get("/api/home", async (req, res) => {
-    try {
-      const someDummyNotes = await Note.find({}).limit(6); //first 6 are dummies and not belong to any users
-      res.status(200).json(someDummyNotes);
-    } catch (error) {
-      console.error("Error occurred while generating notes:", error);
-      res
-        .status(500)
-        .json({ message: "An error occurred while generating notes" });
-    }
-  });
 
   app.listen(PORT, () => console.log(`app runing on port ${PORT}`));
 }
