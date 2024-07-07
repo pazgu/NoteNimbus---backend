@@ -4,11 +4,7 @@ const PORT = process.env.PORT || 3000;
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
-const {
-  verifyToken,
-  authorizeNoteOwner,
-} = require("./middleware/auth.middleware");
-const Note = require("./models/note.model");
+const { verifyToken } = require("./middleware/auth.middleware");
 
 dotenv.config(); // Load config
 

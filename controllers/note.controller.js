@@ -86,7 +86,6 @@ async function editNote(req, res) {
 async function getUserNotes(req, res) {
   try {
     const userId = req.userId;
-    console.log("getuser", userId);
     const user = await User.findById(userId).populate("notes");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -101,10 +100,30 @@ async function getUserNotes(req, res) {
   }
 }
 
+async function toggleIsPinned(req, res) {
+  const { userId, noteId } = req.params;
+  const { isPinned } = req.body;
+  try {
+    const note = await Note.findOneAndUpdate(
+      { _id: noteId, userId },
+      { $set: { isPinned } },
+      { new: true } // Return the updated note
+    );
+    if (!note) {
+      return res.status(404).json({ error: "Note not found" });
+    }
+    res.json(note);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+}
+
 module.exports = {
   getNoteById,
   deleteNote,
   createNote,
   editNote,
   getUserNotes,
+  toggleIsPinned,
 };
