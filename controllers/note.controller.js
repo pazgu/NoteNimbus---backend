@@ -1,6 +1,7 @@
 const { default: mongoose } = require("mongoose");
 const Note = require("../models/note.model");
 const User = require("../models/user.model");
+const { cloudinary } = require("../config/upload");
 
 async function getNoteById(req, res) {
   let note = null;
@@ -32,13 +33,32 @@ async function deleteNote(req, res) {
 
 async function createNote(req, res) {
   const { user, ...note } = req.body;
-  const newNote = new Note({
-    ...note,
-    user,
-  });
+
   if (!mongoose.Types.ObjectId.isValid(user)) {
     return res.status(400).json({ message: "Invalid user ID" });
   }
+
+  let imageUrl = "";
+
+  // Handle image upload
+  if (req.file) {
+    try {
+      const result = await cloudinary.uploader.upload(req.file.path);
+      imageUrl = result.secure_url;
+    } catch (error) {
+      console.log("Error uploading image to Cloudinary", error);
+      return res
+        .status(500)
+        .json({ message: "Server error while uploading image" });
+    }
+  }
+
+  const newNote = new Note({
+    ...note,
+    user,
+    imageUrl,
+  });
+
   try {
     const savedNote = await newNote.save();
     // Update the user's notes array
