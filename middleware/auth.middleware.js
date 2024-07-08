@@ -43,4 +43,8 @@ async function authorizeOwnerDetails(req, res, next) {
   next();
 }
 
-module.exports = { verifyToken, authorizeNoteOwner, authorizeOwnerDetails };
+module.exports = {
+  verifyToken,
+  authorizeNoteOwner,
+  authorizeOwnerDetails,
+};

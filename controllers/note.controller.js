@@ -67,13 +67,11 @@ async function editNote(req, res) {
   try {
     const { id } = req.params;
     console.log(id);
-    const { _id, title, description, body, todoList, isPinned, user } =
-      req.body;
-    note = await Note.findByIdAndUpdate(
-      id,
-      { title, description, body, todoList, isPinned, user },
-      { new: true, runValidators: true }
-    );
+    const updatedNote = req.body;
+    note = await Note.findByIdAndUpdate(id, updatedNote, {
+      new: true,
+      runValidators: true,
+    });
     res.status(200).json({ message: "Note was updated" });
   } catch (error) {
     if (!note) {
@@ -101,17 +99,26 @@ async function getUserNotes(req, res) {
 }
 
 async function toggleIsPinned(req, res) {
-  const { userId, noteId } = req.params;
+  const { id } = req.params;
+  const { userId } = req;
   const { isPinned } = req.body;
+
+  console.log("userId:", userId);
+  console.log("id:", id);
+
   try {
     const note = await Note.findOneAndUpdate(
-      { _id: noteId, userId },
+      { _id: id, user: userId },
       { $set: { isPinned } },
-      { new: true } // Return the updated note
+      { new: true }
     );
+
+    console.log("Updated note:", note); // Log the updated note to check if it's null
+
     if (!note) {
       return res.status(404).json({ error: "Note not found" });
     }
+
     res.json(note);
   } catch (error) {
     console.error(error);

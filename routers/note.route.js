@@ -20,5 +20,6 @@ router.get("/:userId", authorizeOwnerDetails, getUserNotes);
 router.post("/create", createNote);
 router.put("/:userId/:id", authorizeNoteOwner, editNote);
 router.delete("/:userId/:id", authorizeNoteOwner, deleteNote);
+router.patch("/:userId/:id", authorizeNoteOwner, toggleIsPinned);
 
 module.exports = router;
