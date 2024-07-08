@@ -5,6 +5,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const { verifyToken } = require("./middleware/auth.middleware");
+const path = require("path");
 
 dotenv.config(); // Load config
 
@@ -39,6 +40,11 @@ async function main() {
   //     res.status(500).json({ error: "Server error" });
   //   }
   // });
+
+  // Catch-all route
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+  });
 
   app.listen(PORT, () => console.log(`app runing on port ${PORT}`));
 }
