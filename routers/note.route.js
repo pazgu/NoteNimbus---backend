@@ -1,11 +1,12 @@
 const express = require("express");
 
 const {
-  getUserNotes,
   getNoteById,
-  createNote,
   deleteNote,
+  createNote,
   editNote,
+  getUserNotes,
+  toggleIsPinned,
 } = require("../controllers/note.controller");
 const {
   authorizeNoteOwner,
@@ -14,10 +15,10 @@ const {
 
 const router = express.Router();
 
+router.get("/:userId/:id", authorizeNoteOwner, getNoteById);
 router.get("/:userId", authorizeOwnerDetails, getUserNotes);
 router.post("/create", createNote);
-router.put("/:id", authorizeNoteOwner, editNote);
-router.get("/:userId/:id", authorizeNoteOwner, getNoteById);
-router.delete("/:id", authorizeNoteOwner, deleteNote);
+router.put("/:userId/:id", authorizeNoteOwner, editNote);
+router.delete("/:userId/:id", authorizeNoteOwner, deleteNote);
 
 module.exports = router;
