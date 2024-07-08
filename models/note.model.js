@@ -11,6 +11,7 @@ const noteSchema = new mongoose.Schema({
   body: { type: String, required: true },
   todoList: [todoSchema],
   isPinned: { type: Boolean, default: false },
+  imageUrl: { type: String },
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 });
 
