@@ -27,18 +27,18 @@ async function main() {
   app.use("/api/notes", verifyToken, notesRoutes);
   app.use("/api/users", verifyToken, usersRoutes);
 
-  const upload = require("./uploadMiddleware");
+  // const upload = require("./uploadMiddleware");
 
-  router.post("/upload", upload.single("image"), async (req, res) => {
-    try {
-      const imageUrl = req.file.path; // Path to uploaded file
-      // Save imageUrl to the note or use it as needed
-      res.json({ imageUrl: imageUrl });
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      res.status(500).json({ error: "Server error" });
-    }
-  });
+  // router.post("/upload", upload.single("image"), async (req, res) => {
+  //   try {
+  //     const imageUrl = req.file.path; // Path to uploaded file
+  //     // Save imageUrl to the note or use it as needed
+  //     res.json({ imageUrl: imageUrl });
+  //   } catch (error) {
+  //     console.error("Error uploading file:", error);
+  //     res.status(500).json({ error: "Server error" });
+  //   }
+  // });
 
   app.listen(PORT, () => console.log(`app runing on port ${PORT}`));
 }
