@@ -146,6 +146,23 @@ async function toggleIsPinned(req, res) {
   }
 }
 
+async function deleteImage(req, res) {
+  const { id } = req.params;
+  try {
+    const note = await Note.findById(id);
+    if (!note) {
+      return res.status(404).json({ message: "Note not found" });
+    }
+    note.imageUrl = null;
+    await note.save();
+
+    res.status(200).json({ message: "Image deleted successfully", note });
+  } catch (error) {
+    console.error("Error deleting image:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+}
+
 module.exports = {
   getNoteById,
   deleteNote,
@@ -153,4 +170,5 @@ module.exports = {
   editNote,
   getUserNotes,
   toggleIsPinned,
+  deleteImage,
 };
