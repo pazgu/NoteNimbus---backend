@@ -7,7 +7,7 @@ async function getNoteById(req, res) {
   let note = null;
   try {
     const { id } = req.params;
-    note = await Note.findById(id).exec();
+    note = await Note.findById(id).populate("collaborators").exec();
     res.status(200).json(note);
   } catch (error) {
     if (!note) {
@@ -18,16 +18,27 @@ async function getNoteById(req, res) {
 }
 
 async function deleteNote(req, res) {
-  let product = null;
   try {
     const { id } = req.params;
-    product = await Note.findByIdAndDelete(id).exec();
-    res.status(200).json({ message: "Note was deleted" });
-  } catch (error) {
-    if (!product) {
-      return res.status(404).json({ message: "Note not found" });
+    const userId = req.userId;
+
+    const deletedNote = await Note.findOneAndDelete({ _id: id, user: userId });
+
+    if (!deletedNote) {
+      return res.status(404).json({
+        message: "Note not found or you don't have permission to delete it",
+      });
     }
-    res.status(500).json({ message: error.message });
+
+    // Remove the note reference from the user's notes array
+    await User.findByIdAndUpdate(userId, {
+      $pull: { notes: id },
+    });
+
+    res.status(200).json({ message: "Note was deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting note:", error);
+    res.status(500).json({ message: "Server error while deleting note" });
   }
 }
 
@@ -86,6 +97,7 @@ async function editNote(req, res) {
   let note = null;
   try {
     const { id } = req.params;
+    console.log(id);
     const updatedNote = req.body;
     note = await Note.findByIdAndUpdate(id, updatedNote, {
       new: true,
@@ -121,6 +133,9 @@ async function toggleIsPinned(req, res) {
   const { id } = req.params;
   const { userId } = req;
   const { isPinned } = req.body;
+
+  console.log("userId:", userId);
+  console.log("id:", id);
 
   try {
     const note = await Note.findOneAndUpdate(
@@ -160,19 +175,44 @@ async function deleteImage(req, res) {
 }
 
 const inviteCollaborator = async (req, res) => {
-  const { id, userId } = req.params;
+  const { id } = req.params;
   const { email } = req.body;
+  const userId = req.userId;
   try {
-    let note = await Note.findById(id);
-    if (note.collaborators.includes(email)) {
-      return res.status(400).json({ message: "Collaborator already invited" });
+    const note = await Note.findById(id);
+    if (!note) {
+      return res.status(404).json({ message: "Note not found" });
     }
+    // Check if the user is the owner of the note
+    if (note.user.toString() !== userId) {
+      return res.status(403).json({
+        message:
+          "You do not have permission to invite collaborators to this note",
+      });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if the user is already a collaborator
+    if (note.collaborators.includes(email)) {
+      return res.status(400).json({
+        message: "This user is already a collaborator on this note",
+        collaborators: note.collaborators,
+      });
+    }
+
+    // If not already a collaborator, add them
     note.collaborators.push(email);
     await note.save();
-    res
-      .status(200)
-      .json({ message: "Collaborator invited successfully", note });
+    res.status(200).json({
+      message: "Collaborator invited successfully",
+      collaborators: note.collaborators,
+    });
   } catch (error) {
+    console.error("Error inviting collaborator:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
