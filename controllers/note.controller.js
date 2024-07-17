@@ -4,16 +4,32 @@ const User = require("../models/user.model");
 const { cloudinary } = require("../config/upload");
 
 async function getNoteById(req, res) {
-  let note = null;
   try {
     const { id } = req.params;
-    note = await Note.findById(id).populate("collaborators").exec();
-    res.status(200).json(note);
-  } catch (error) {
+    const userId = req.userId;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const note = await Note.findById(id).populate("collaborators").exec();
     if (!note) {
       return res.status(404).json({ message: "Note not found" });
     }
-    res.status(500).json({ message: error.message });
+    // Check if the user is the owner or a collaborator
+    if (
+      note.user.toString() !== userId &&
+      !note.collaborators.includes(user.email)
+    ) {
+      return res
+        .status(403)
+        .json({ message: "You don't have permission to view this note" });
+    }
+    res.status(200).json(note);
+  } catch (error) {
+    console.error("Error fetching note by id:", error);
+    res.status(500).json({ message: "Server error while fetching note" });
   }
 }
 
@@ -115,14 +131,22 @@ async function editNote(req, res) {
 async function getUserNotes(req, res) {
   try {
     const userId = req.userId;
-    const user = await User.findById(userId).populate("notes");
+    const userNotes = await Note.find({ user: userId });
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    if (user.notes.length === 0) {
-      return res.status(404).json({ message: "User has no notes" });
+
+    // Find notes where the user is a collaborator
+    const sharedNotes = await Note.find({ collaborators: user.email });
+
+    const allNotes = [...userNotes, ...sharedNotes];
+
+    if (allNotes.length === 0) {
+      return res.status(404).json({ message: "No notes found" });
     }
-    res.status(200).json({ notes: user.notes });
+
+    res.status(200).json({ notes: allNotes });
   } catch (error) {
     console.error("Error fetching user notes:", error);
     res.status(500).json({ message: "Server error while fetching user notes" });

@@ -19,13 +19,13 @@ const { upload } = require("../config/upload");
 
 const router = express.Router();
 
-router.get("/:userId/:id", authorizeNoteOwner, getNoteById);
+router.get("/:userId/:id", getNoteById);
 router.get("/:userId", authorizeOwnerDetails, getUserNotes);
 router.post("/create", upload.single("image"), createNote); //middleware used for handling single image upload
-router.put("/:userId/:id", authorizeNoteOwner, editNote);
-router.delete("/:id/image", authorizeNoteOwner, deleteImage);
-router.delete("/:userId/:id", authorizeNoteOwner, deleteNote);
-router.patch("/:userId/:id", authorizeNoteOwner, toggleIsPinned);
+router.put("/:userId/:id", editNote);
+router.delete("/:id/image", deleteImage);
+router.delete("/:userId/:id", deleteNote);
+router.patch("/:userId/:id", toggleIsPinned);
 router.post("/:userId/:id/invite", authorizeNoteOwner, inviteCollaborator);
 
 module.exports = router;

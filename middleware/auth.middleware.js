@@ -42,6 +42,31 @@ async function authorizeOwnerDetails(req, res, next) {
   next();
 }
 
+// async function authorizeNoteAccess(req, res, next) {
+//   const { id: noteId } = req.params;
+//   try {
+//     const note = await Note.findById(noteId);
+//     if (!note) {
+//       return res.status(404).json({ message: "Note not found" });
+//     }
+
+//     const user = await User.findById(req.userId);
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     if (note.user.toString() === req.userId || note.collaborators.includes(user.email)) {
+//       req.note = note; // Attach the note to the request object for later use
+//       next();
+//     } else {
+//       return res.status(403).json({ message: "User not authorized" });
+//     }
+//   } catch (error) {
+//     console.error("Error in authorizeNoteAccess:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// }
+
 module.exports = {
   verifyToken,
   authorizeNoteOwner,
