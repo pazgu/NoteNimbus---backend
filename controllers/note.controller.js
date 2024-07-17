@@ -163,18 +163,12 @@ const inviteCollaborator = async (req, res) => {
   const { id, userId } = req.params;
   const { email } = req.body;
   try {
-    // Check if the collaborator email is valid
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    let note = await Note.findById(id);
+    if (note.collaborators.includes(email)) {
+      return res.status(400).json({ message: "Collaborator already invited" });
     }
-    const note = await Note.findById(id);
-    // Add the collaborator
-    if (!note.collaborators.includes(email)) {
-      note.collaborators.push(email);
-      await note.save();
-    }
-
+    note.collaborators.push(email);
+    await note.save();
     res
       .status(200)
       .json({ message: "Collaborator invited successfully", note });
