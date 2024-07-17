@@ -30,7 +30,6 @@ async function authorizeNoteOwner(req, res, next) {
   if (note.user.toString() !== req.userId) {
     return res.status(403).json({ message: "User not authorized" });
   }
-
   next();
 }
 

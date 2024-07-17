@@ -13,6 +13,7 @@ const noteSchema = new mongoose.Schema({
   isPinned: { type: Boolean, default: false },
   imageUrl: { type: String },
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  collaborators: [{ type: String }],
 });
 
 const Note = mongoose.model("Note", noteSchema);

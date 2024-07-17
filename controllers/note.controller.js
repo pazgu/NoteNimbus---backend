@@ -86,7 +86,6 @@ async function editNote(req, res) {
   let note = null;
   try {
     const { id } = req.params;
-    console.log(id);
     const updatedNote = req.body;
     note = await Note.findByIdAndUpdate(id, updatedNote, {
       new: true,
@@ -122,9 +121,6 @@ async function toggleIsPinned(req, res) {
   const { id } = req.params;
   const { userId } = req;
   const { isPinned } = req.body;
-
-  console.log("userId:", userId);
-  console.log("id:", id);
 
   try {
     const note = await Note.findOneAndUpdate(
@@ -163,6 +159,30 @@ async function deleteImage(req, res) {
   }
 }
 
+const inviteCollaborator = async (req, res) => {
+  const { id, userId } = req.params;
+  const { email } = req.body;
+  try {
+    // Check if the collaborator email is valid
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const note = await Note.findById(id);
+    // Add the collaborator
+    if (!note.collaborators.includes(email)) {
+      note.collaborators.push(email);
+      await note.save();
+    }
+
+    res
+      .status(200)
+      .json({ message: "Collaborator invited successfully", note });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
 module.exports = {
   getNoteById,
   deleteNote,
@@ -171,4 +191,5 @@ module.exports = {
   getUserNotes,
   toggleIsPinned,
   deleteImage,
+  inviteCollaborator,
 };

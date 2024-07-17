@@ -8,6 +8,7 @@ const {
   getUserNotes,
   toggleIsPinned,
   deleteImage,
+  inviteCollaborator,
 } = require("../controllers/note.controller");
 const {
   authorizeNoteOwner,
@@ -25,5 +26,6 @@ router.put("/:userId/:id", authorizeNoteOwner, editNote);
 router.delete("/:id/image", authorizeNoteOwner, deleteImage);
 router.delete("/:userId/:id", authorizeNoteOwner, deleteNote);
 router.patch("/:userId/:id", authorizeNoteOwner, toggleIsPinned);
+router.post("/:userId/:id/invite", authorizeNoteOwner, inviteCollaborator);
 
 module.exports = router;
