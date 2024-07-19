@@ -13,10 +13,13 @@ dotenv.config(); // Load config
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
-  cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"],
-  },
+  cors:
+    process.env.NODE_ENV === "production"
+      ? {} // No CORS needed in production as client is served from same origin
+      : {
+          origin: "http://localhost:5173",
+          methods: ["GET", "POST"],
+        },
 });
 
 app.set("io", io);
@@ -32,7 +35,6 @@ async function main() {
         origin: "http://localhost:5173",
       })
     );
-    app.use(express.static("public"));
 
     const notesRoutes = require("./routers/note.route");
     const usersRoutes = require("./routers/user.route");
@@ -42,10 +44,22 @@ async function main() {
     app.use("/api/notes", verifyToken, notesRoutes);
     app.use("/api/users", verifyToken, usersRoutes);
 
-    // Catch-all route
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(__dirname, "public", "index.html"));
-    });
+    if (process.env.NODE_ENV === "production") {
+      // Serve static files from the React app
+      app.use(express.static(path.join(__dirname, "client/build")));
+
+      // The "catchall" handler: for any request that doesn't
+      // match one above, send back React's index.html file.
+      app.get("*", (req, res) => {
+        res.sendFile(path.join(__dirname, "client/build", "index.html"));
+      });
+    } else {
+      app.use(express.static("public"));
+      // Catch-all route
+      app.get("*", (req, res) => {
+        res.sendFile(path.join(__dirname, "public", "index.html"));
+      });
+    }
 
     io.on("connection", (socket) => {
       console.log("New client connected");
