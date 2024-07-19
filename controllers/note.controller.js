@@ -38,18 +38,53 @@ async function deleteNote(req, res) {
     const { id } = req.params;
     const userId = req.userId;
 
-    const deletedNote = await Note.findOneAndDelete({ _id: id, user: userId });
+    const note = await Note.findById(id);
 
-    if (!deletedNote) {
+    if (!note) {
       return res.status(404).json({
-        message: "Note not found or you don't have permission to delete it",
+        message: "Note not found",
       });
     }
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if the user is the owner or a collaborator
+    if (
+      note.user.toString() !== userId &&
+      !note.collaborators.includes(user.email)
+    ) {
+      return res.status(403).json({
+        message: "You don't have permission to delete this note",
+      });
+    }
+
+    // If the user is a collaborator, remove them from the collaborators list
+    if (note.collaborators.includes(user.email)) {
+      note.collaborators = note.collaborators.filter(
+        (email) => email !== user.email
+      );
+      await note.save();
+
+      // Emit a Socket.IO event to update other users
+      req.app.get("io").to(id).emit("note_updated", note);
+
+      return res
+        .status(200)
+        .json({ message: "Removed from shared note successfully" });
+    }
+
+    // If the user is the owner, delete the note
+    await Note.findByIdAndDelete(id);
 
     // Remove the note reference from the user's notes array
     await User.findByIdAndUpdate(userId, {
       $pull: { notes: id },
     });
+
+    // Emit a Socket.IO event to notify collaborators
+    req.app.get("io").to(id).emit("note_deleted", id);
 
     res.status(200).json({ message: "Note was deleted successfully" });
   } catch (error) {
