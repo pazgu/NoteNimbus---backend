@@ -113,12 +113,13 @@ async function editNote(req, res) {
   let note = null;
   try {
     const { id } = req.params;
-    console.log(id);
     const updatedNote = req.body;
     note = await Note.findByIdAndUpdate(id, updatedNote, {
       new: true,
       runValidators: true,
     });
+    // Emit Socket.IO event for real-time update
+    req.app.get("io").to(id).emit("note_updated", note);
     res.status(200).json({ message: "Note was updated" });
   } catch (error) {
     if (!note) {
